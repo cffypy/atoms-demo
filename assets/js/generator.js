@@ -135,11 +135,13 @@
         onError: (err) => {
           // 在线调用失败（如余额不足 / 网络错误 / Key 无效）→ 优雅降级到内置离线引擎，保证演示始终可交互
           console.warn("在线大模型调用失败，回退离线引擎：", err);
+          const reason = (err && err.message) || "调用失败";
+          const isNetwork = /网络连接失败|Failed to fetch|NetworkError|network error|无法连接/i.test(reason);
           const fb = offlineGenerate(prompt, prevCode, { accent: settings && settings.accent, dark: settings && settings.dark });
           setTimeout(() => tick(), 120);
           streamCode(fb.code, onToken, () => {
             tick();
-            onDone && onDone(fb.code, { intent: fb.intent, fallback: true, reason: (err && err.message) || "调用失败" });
+            onDone && onDone(fb.code, { intent: fb.intent, fallback: true, reason, isNetwork });
           });
         },
       });
