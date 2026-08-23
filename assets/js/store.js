@@ -4,7 +4,12 @@
  * ===================================================================== */
 (function () {
   const App = (window.App = window.App || {});
-  const KEY = "atoms_demo_state_v2";
+
+  // 存储键按登录用户隔离，未登录时落在 guest
+  function userKey() {
+    const u = (window.App && window.App.Auth && window.App.Auth.current()) || "guest";
+    return "atoms_demo_state_v2_" + u;
+  }
 
   function blank() {
     // 默认启用在线 DeepSeek；API Key 优先从 secrets.js（本地/CI 注入）读取，缺失则留空回退离线
@@ -14,7 +19,7 @@
 
   function load() {
     try {
-      const raw = localStorage.getItem(KEY);
+      const raw = localStorage.getItem(userKey());
       if (!raw) return blank();
       const s = JSON.parse(raw);
       if (!s.projects) s.projects = [];
@@ -29,7 +34,7 @@
 
   function persist() {
     try {
-      localStorage.setItem(KEY, JSON.stringify(state));
+      localStorage.setItem(userKey(), JSON.stringify(state));
     } catch (e) {
       console.warn("存储失败", e);
     }
@@ -42,6 +47,8 @@
   const Store = {
     getState: () => state,
     save: persist,
+    // 切换登录账号后，重新从对应用户的存储键载入数据
+    reload() { state = load(); },
 
     getProjects: () => state.projects,
     getProject: (id) => state.projects.find((p) => p.id === id) || null,

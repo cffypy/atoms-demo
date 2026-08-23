@@ -25,19 +25,82 @@
     const shared = App.Share.getSharedFromHash();
     if (shared) { App.Share.renderShared(shared); return; }
 
+    bindEvents();
+    bindAuthEvents();
+
+    if (App.Auth.isLoggedIn()) enterApp();
+    else showAuthGate();
+  }
+
+  // 已登录后进入主应用
+  function enterApp() {
+    S.reload(); // 载入当前登录用户的数据
+    const u = App.Auth.current();
+    $("userBadge").textContent = "👤 " + u;
+    $("userBadge").classList.remove("hidden");
+    $("btnLogout").classList.remove("hidden");
+    $("authModal").classList.add("hidden");
+
     // 若构建时已注入 DeepSeek Key（secrets.js），确保默认走在线模式并填充 Key
     const sec = window.ATOMS_SECRETS;
     if (sec && sec.apiKey && !S.getSettings().apiKey) {
       S.setSettings({ apiKey: sec.apiKey, mode: "llm" });
     }
 
-    bindEvents();
     renderSessions();
     const projects = S.getProjects();
     if (projects.length) selectProject(projects[0].id);
     else { const p = S.createProject("我的第一个 Atoms 项目"); renderSessions(); selectProject(p.id); }
     updateModeHint();
     buildExampleChips();
+  }
+
+  // ---------- 登录 / 注册门面 ----------
+  let authMode = "login";
+  function showAuthGate() {
+    $("authModal").classList.remove("hidden");
+    $("authError").classList.add("hidden");
+    setTimeout(() => { const i = $("authUser"); if (i) i.focus(); }, 60);
+  }
+  function showAuthError(msg) {
+    const e = $("authError"); e.textContent = msg; e.classList.remove("hidden");
+  }
+  function bindAuthEvents() {
+    const submit = async () => {
+      const user = $("authUser").value.trim();
+      const pass = $("authPass").value;
+      if (!user || !pass) { showAuthError("请输入用户名和密码"); return; }
+      const res = authMode === "register"
+        ? await App.Auth.register(user, pass)
+        : await App.Auth.login(user, pass);
+      if (res.ok) {
+        $("authUser").value = ""; $("authPass").value = "";
+        enterApp();
+        toast(authMode === "register" ? "注册成功，已登录" : "登录成功");
+      } else {
+        showAuthError(res.error);
+      }
+    };
+    $("authSubmit").onclick = submit;
+    $("authPass").addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+    $("authUser").addEventListener("keydown", (e) => { if (e.key === "Enter") $("authPass").focus(); });
+    document.querySelectorAll(".auth-tab").forEach((t) => {
+      t.onclick = () => {
+        authMode = t.dataset.auth;
+        document.querySelectorAll(".auth-tab").forEach((x) => x.classList.toggle("active", x === t));
+        $("authSubmit").textContent = authMode === "register" ? "注册并进入" : "登录";
+        $("authError").classList.add("hidden");
+        $("authPass").value = "";
+      };
+    });
+    $("btnLogout").onclick = () => {
+      App.Auth.logout();
+      currentId = null;
+      $("userBadge").classList.add("hidden");
+      $("btnLogout").classList.add("hidden");
+      showAuthGate();
+      toast("已退出登录");
+    };
   }
 
   // ---------- 示例 chips ----------
