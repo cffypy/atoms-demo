@@ -251,6 +251,12 @@ input, textarea, select { font-family: inherit; }
 .field input, .field select { background: var(--bg); border: 1px solid var(--border-2); color: var(--text); border-radius: 8px; padding: 9px 11px; font-size: 13px; }
 .field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
 .field-tip { font-size: 11.5px; color: var(--text-faint); margin: 2px 0 0; }
+.modal-tip {
+  font-size: 12px; padding: 10px 12px; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--border-2); color: var(--text-dim);
+}
+.modal-tip.ok { border-color: rgba(61,220,151,.5); color: var(--ok); }
+.modal-tip.err { border-color: rgba(255,92,124,.5); color: var(--danger); }
 .modal-foot { display: flex; justify-content: space-between; padding: 14px 18px; border-top: 1px solid var(--border); }
 
 /* ---------- Toast ---------- */
