@@ -78,6 +78,17 @@
       onDone && onDone(full);
     } catch (err) {
       if (err && err.name === "AbortError") return;
+      // 把浏览器网络错误统一成更友好的中文原因，方便上层展示排查建议
+      let friendly = err && err.message;
+      if (friendly) {
+        const low = friendly.toLowerCase();
+        if (low.includes("failed to fetch") || low.includes("networkerror") || low.includes("network error") || low.includes("无法连接") || low.includes("fetch")) {
+          friendly = "网络连接失败（浏览器无法连接到 API 服务器）";
+        }
+      }
+      if (err && friendly && friendly !== err.message) {
+        err.message = friendly;
+      }
       onError && onError(err);
     }
   }
