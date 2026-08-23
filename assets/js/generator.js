@@ -133,7 +133,14 @@
           onDone && onDone(code, { intent: "llm" });
         },
         onError: (err) => {
-          onError && onError(err);
+          // 在线调用失败（如余额不足 / 网络错误 / Key 无效）→ 优雅降级到内置离线引擎，保证演示始终可交互
+          console.warn("在线大模型调用失败，回退离线引擎：", err);
+          const fb = offlineGenerate(prompt, prevCode, { accent: settings && settings.accent, dark: settings && settings.dark });
+          setTimeout(() => tick(), 120);
+          streamCode(fb.code, onToken, () => {
+            tick();
+            onDone && onDone(fb.code, { intent: fb.intent, fallback: true, reason: (err && err.message) || "调用失败" });
+          });
         },
       });
     } else {

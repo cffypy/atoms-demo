@@ -25,6 +25,12 @@
     const shared = App.Share.getSharedFromHash();
     if (shared) { App.Share.renderShared(shared); return; }
 
+    // 若构建时已注入 DeepSeek Key（secrets.js），确保默认走在线模式并填充 Key
+    const sec = window.ATOMS_SECRETS;
+    if (sec && sec.apiKey && !S.getSettings().apiKey) {
+      S.setSettings({ apiKey: sec.apiKey, mode: "llm" });
+    }
+
     bindEvents();
     renderSessions();
     const projects = S.getProjects();
@@ -173,7 +179,10 @@
       onDone: (code, info) => {
         const v = S.addVersion(currentId, { code, prompt: text, ts: Date.now(), intent: info.intent });
         const idx = S.getProject(currentId).versions.length - 1;
-        S.addMessage(currentId, { role: "assistant", text: "已生成「" + (info.intent === "edit" ? "增量修改" : "新应用") + "」，可在右侧预览并进一步迭代。", versionIndex: idx, prompt: text });
+        const note = info.fallback
+          ? "⚠ 在线大模型调用失败（" + (info.reason || "未知原因") + "），已自动回退到内置离线引擎生成。可在「智能体」设置中检查 Key / 余额，或切回离线模式。"
+          : "已生成「" + (info.intent === "edit" ? "增量修改" : "新应用") + "」，可在右侧预览并进一步迭代。";
+        S.addMessage(currentId, { role: "assistant", text: note, versionIndex: idx, prompt: text });
         streamBox.classList.remove("cursor-blink");
         renderChat(S.getProject(currentId));
         renderVersions(S.getProject(currentId));
@@ -359,8 +368,8 @@
   }
   function updateModeHint() {
     const s = S.getSettings();
-    el.modeHint.textContent = s.mode === "llm" && s.apiKey ? "真实大模型：" + (s.model || "") : "离线智能体（无需 Key）";
-    $("btnGithub").href = "https://github.com";
+    el.modeHint.textContent = s.mode === "llm" && s.apiKey ? "🌐 在线大模型（DeepSeek：" + (s.model || "deepseek-chat") + "）" : "离线智能体（无需 Key）";
+    $("btnGithub").href = "https://github.com/cffypy/atoms-demo";
   }
 
   function setupResizer() {

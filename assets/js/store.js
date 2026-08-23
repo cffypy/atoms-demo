@@ -4,10 +4,12 @@
  * ===================================================================== */
 (function () {
   const App = (window.App = window.App || {});
-  const KEY = "atoms_demo_state_v1";
+  const KEY = "atoms_demo_state_v2";
 
   function blank() {
-    return { projects: [], settings: { mode: "offline", baseUrl: "https://api.deepseek.com/v1", apiKey: "", model: "deepseek-chat" } };
+    // 默认启用在线 DeepSeek；API Key 优先从 secrets.js（本地/CI 注入）读取，缺失则留空回退离线
+    const secretsKey = (window.ATOMS_SECRETS && window.ATOMS_SECRETS.apiKey) || "";
+    return { projects: [], settings: { mode: "llm", baseUrl: "https://api.deepseek.com/v1", apiKey: secretsKey, model: "deepseek-chat" } };
   }
 
   function load() {

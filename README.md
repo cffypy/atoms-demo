@@ -49,31 +49,35 @@ python3 -m http.server 8000
 - “做一个数据可视化仪表盘”
 - “把背景改成深色模式”（多轮迭代示例）
 
-## 智能体设置
+## 智能体（默认在线 DeepSeek）
 
-点击右上角 **⚙ 智能体**：
+应用**默认接入在线 DeepSeek 大模型**（`deepseek-chat`，SSE 流式生成）。
 
-- **离线智能体（默认）**：内置模板引擎，无需任何 Key，开箱即用、保证评审时可完整体验。
-- **真实大模型**：填入 API Base URL / Key / 模型名（如 DeepSeek：`https://api.deepseek.com/v1`，模型 `deepseek-chat`）。智能体将改为调用真实模型流式生成。
-  - Key 仅保存在你本机浏览器（localStorage），不会上传任何服务器。
+- **API Key 的安全性**：公开部署时 Key **不进代码仓库**——通过 GitHub 仓库 Secret `DEEPSEEK_KEY` 注入，由 `.github/workflows/deploy.yml` 在构建期写入 `assets/js/secrets.js`（该文件已被 `.gitignore` 忽略）。本地调试则复制 `secrets.example.js` 为 `secrets.js` 填入 Key。
+- **离线兜底**：当在线调用失败（如余额不足、网络异常、Key 无效）时，智能体会**自动回退**到内置离线模板引擎生成，保证演示始终可交互。你也可以在 **⚙ 智能体** 中手动切回离线模式。
+- 点击右上角 **⚙ 智能体** 可查看 / 修改 Base URL、模型名，或粘贴自己的 Key。
 
-## 部署到 GitHub Pages
+## 部署到 GitHub Pages（Actions 自动部署 + 安全注入 Key）
 
-仓库根目录即为站点根，推送到 GitHub 后开启 Pages 即可：
+推送到 `main` 即自动构建并部署，DeepSeek Key 经仓库 Secret 注入，不进源码：
 
 ```bash
-git init
-git add -A && git commit -m "feat: Atoms Demo"
-gh repo create atoms-demo --public --source=. --push   # 或手动在 GitHub 新建仓库后 git push
-# Settings → Pages → Source: Deploy from a branch → main / root → Save
+# 1) 在 GitHub 仓库 Settings → Secrets and variables → Actions 添加：
+#    DEEPSEEK_KEY = 你的 DeepSeek API Key
+#    （或用 CLI：gh secret set DEEPSEEK_KEY）
+# 2) 推送 main 分支，Actions 会自动部署到 GitHub Pages
+git push origin main
+# Pages 设置：Source = GitHub Actions（首次 Actions 成功运行后会自动启用）
 ```
+
+如需纯静态（无 Actions）部署，把 Key 填入 `assets/js/secrets.js` 后从 `main` 分支 root 部署即可（注意该文件会被提交，密钥将公开）。
 
 ## 技术栈
 
 | 层级 | 选型 |
 |:--|:--|
 | 前端 | 原生 HTML5 + Vanilla JS（经典 `<script>` 加载，兼容 `file://` 与 GitHub Pages） |
-| 智能体 | 离线模板引擎（意图识别 + 增量编辑）+ 可选 OpenAI 兼容 LLM（SSE 流式） |
+| 智能体 | **默认在线 DeepSeek**（OpenAI 兼容 / SSE 流式）+ 离线模板引擎兜底（意图识别 + 增量编辑） |
 | 持久化 | 浏览器 localStorage |
 | 分享 | URL hash 快照（base64 编码单文件 HTML） |
 | 部署 | 任意静态托管（GitHub Pages / CloudStudio / Vercel 静态） |
