@@ -78,11 +78,3 @@ git push origin main
 | 持久化 | 浏览器 localStorage |
 | 分享 | URL hash 快照（base64 编码单文件 HTML） |
 | 部署 | 任意静态托管（GitHub Pages / CloudStudio / Vercel 静态） |
-
-## 对应笔试「完成要求」
-
-- ✅ **具备真实交互**（而非纯静态展示）：生成应用均有按钮、输入、状态变化
-- ✅ **智能体驱动**完成代码（应用）生成
-- ✅ 将生成应用以**可视化网页形式**展示（iframe 实时预览）
-- ✅ **可持久化**：项目 / 版本刷新不丢
-- ✅ **可公网部署**：纯静态，GitHub Pages 一行命令上线
