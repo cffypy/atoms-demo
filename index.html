@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚛ Atoms Demo · 自然语言生成可交互网页</title>
+  <meta name="description" content="对标 atoms.dev 的 AI 智能体原型：用自然语言驱动智能体生成真实可交互的单文件网页应用，并实时可视化预览。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚛️</text></svg>" />
+</head>
+<body>
+  <!-- ============ 顶栏 ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-logo">⚛</span>
+      <div class="brand-text">
+        <strong>Atoms&nbsp;Demo</strong>
+        <small>自然语言 → 可交互网页 · AI 智能体原型</small>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <button id="btnNewProject" class="btn btn-ghost" title="新建项目">＋ 新项目</button>
+      <button id="btnSettings" class="btn btn-ghost" title="设置 / API Key">⚙ 智能体</button>
+      <a class="btn btn-ghost" href="https://github.com" target="_blank" rel="noopener" id="btnGithub">↗ GitHub</a>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ============ 左栏：项目 / 会话 ============ -->
+    <aside class="col col-sessions" id="colSessions">
+      <div class="sessions-head">
+        <span class="col-title">项目</span>
+        <button id="btnNewSession" class="icon-btn" title="新建会话">＋</button>
+      </div>
+      <div class="sessions-search">
+        <input id="searchSessions" type="text" placeholder="搜索项目…" />
+      </div>
+      <ul id="sessionList" class="session-list"></ul>
+      <div class="sessions-foot">
+        <small id="sessionCount">0 个项目</small>
+      </div>
+    </aside>
+
+    <!-- 拖拽分隔条 -->
+    <div class="resizer" data-target="colSessions"></div>
+
+    <!-- ============ 中栏：对话 ============ -->
+    <section class="col col-chat" id="colChat">
+      <div class="chat-head">
+        <div>
+          <span class="col-title" id="chatTitle">未命名项目</span>
+          <small id="chatMeta" class="chat-meta">智能体就绪</small>
+        </div>
+        <div class="chat-head-actions">
+          <button id="btnRename" class="icon-btn" title="重命名">✎</button>
+          <button id="btnDelete" class="icon-btn danger" title="删除项目">🗑</button>
+        </div>
+      </div>
+
+      <div id="messageList" class="message-list">
+        <!-- 欢迎 / 空状态 -->
+        <div class="welcome" id="welcome">
+          <div class="welcome-logo">⚛</div>
+          <h1>用一句话，生成一个可交互的网页应用</h1>
+          <p>描述你的想法，AI 智能体会规划方案、生成完整单文件网页，并在右侧实时预览。支持多轮迭代修改。</p>
+          <div class="example-chips" id="exampleChips"></div>
+        </div>
+      </div>
+
+      <div class="composer">
+        <div id="stepBar" class="step-bar hidden"></div>
+        <div class="composer-input">
+          <textarea id="promptInput" rows="1" placeholder="例如：生成一个待办事项清单网页，支持添加、完成和删除…"></textarea>
+          <button id="btnSend" class="btn btn-primary" title="发送">➤</button>
+        </div>
+        <div class="composer-hint">
+          <span id="modeHint">离线智能体（无需 Key）</span>
+          <span class="dot-sep">·</span>
+          <span>Enter 发送 / Shift+Enter 换行</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="resizer" data-target="colChat"></div>
+
+    <!-- ============ 右栏：预览 / 代码 / 分享 ============ -->
+    <section class="col col-stage" id="colStage">
+      <div class="stage-tabs">
+        <button class="stage-tab active" data-tab="preview">👁 预览</button>
+        <button class="stage-tab" data-tab="code">⟨/⟩ 代码</button>
+        <button class="stage-tab" data-tab="share">🔗 分享</button>
+        <div class="version-bar" id="versionBar"></div>
+      </div>
+
+      <!-- 预览 -->
+      <div class="stage-pane active" data-pane="preview">
+        <div class="browser-frame">
+          <div class="browser-bar">
+            <span class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+            <div class="browser-url"><span id="previewUrl">about:blank</span><button id="btnRefresh" class="mini-btn" title="刷新预览">⟳</button></div>
+          </div>
+          <iframe id="previewFrame" class="preview-frame" title="应用预览" sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups"></iframe>
+          <div class="preview-empty" id="previewEmpty">
+            <p>还没有生成内容</p>
+            <span>在左侧描述需求，智能体会在这里实时渲染应用</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 代码 -->
+      <div class="stage-pane" data-pane="code">
+        <div class="code-toolbar">
+          <span class="code-lang">index.html</span>
+          <div class="code-actions">
+            <button id="btnSaveCode" class="mini-btn">保存并刷新</button>
+            <button id="btnCopyCode" class="mini-btn">复制</button>
+            <button id="btnDownload" class="mini-btn">下载 .html</button>
+          </div>
+        </div>
+        <textarea id="codeEditor" class="code-editor" spellcheck="false" placeholder="生成的应用源代码会显示在这里，可直接编辑后保存预览。"></textarea>
+      </div>
+
+      <!-- 分享 -->
+      <div class="stage-pane" data-pane="share">
+        <div class="share-body">
+          <h3>🔗 分享此应用</h3>
+          <p>将当前应用打包为一条链接，任何人打开即可运行（无需服务器）。</p>
+          <button id="btnGenShare" class="btn btn-primary">生成分享链接</button>
+          <div id="shareResult" class="share-result hidden">
+            <input id="shareUrl" type="text" readonly />
+            <button id="btnCopyShare" class="mini-btn">复制</button>
+          </div>
+          <div class="share-note" id="shareNote"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ 设置弹窗 ============ -->
+  <div class="modal-mask hidden" id="settingsModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>⚙ 智能体设置</h2>
+        <button class="icon-btn" id="btnCloseSettings">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">默认使用<strong>内置离线智能体</strong>，无需任何 Key 即可真实生成可交互应用（保证评审时开箱即用）。如需更强效果，可粘贴任意 OpenAI 兼容接口的 API Key，智能体将改为调用真实大模型流式生成。</p>
+
+        <label class="field">
+          <span>模式</span>
+          <select id="setMode">
+            <option value="offline">离线智能体（推荐，免 Key）</option>
+            <option value="llm">真实大模型（需 Key）</option>
+          </select>
+        </label>
+
+        <div id="llmFields" class="hidden">
+          <label class="field">
+            <span>API Base URL</span>
+            <input id="setBaseUrl" type="text" placeholder="https://api.deepseek.com/v1" />
+          </label>
+          <label class="field">
+            <span>API Key</span>
+            <input id="setApiKey" type="password" placeholder="sk-..." autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>模型名</span>
+            <input id="setModel" type="text" placeholder="deepseek-chat" />
+          </label>
+          <p class="field-tip">Key 仅保存在你本机浏览器（localStorage），不会上传到任何服务器。</p>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" id="btnResetSettings">恢复默认</button>
+        <button class="btn btn-primary" id="btnSaveSettings">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- ============ 脚本（经典加载顺序，兼容 file:// 与 GitHub Pages） ============ -->
+  <script src="assets/js/templates.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/share.js"></script>
+  <script src="assets/js/llm.js"></script>
+  <script src="assets/js/generator.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

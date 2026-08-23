@@ -1,0 +1,12 @@
+# 依赖 / 密钥
+node_modules/
+.env
+.env.local
+*.log
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 测试台（本地临时）
+/tmp/test_gen.js
