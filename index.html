@@ -148,7 +148,8 @@
         <button class="icon-btn" id="btnCloseSettings">✕</button>
       </div>
       <div class="modal-body">
-        <p class="modal-desc">默认已接入<strong>在线 DeepSeek（deepseek-chat）</strong>，内置演示 Key 随站点提供，开箱即用、真实大模型流式生成。若调用失败（如余额不足 / Key 失效），智能体会<strong>自动回退到内置离线引擎</strong>保证可交互。你也可粘贴自己的任意 OpenAI 兼容接口 Key 覆盖默认。</p>
+        <p class="modal-desc">默认已接入<strong>在线 DeepSeek（deepseek-chat）</strong>，内置演示 Key 随站点提供，真实大模型流式生成。若调用失败（如余额不足 / Key 失效 / 网络不通），智能体会<strong>自动回退到内置离线引擎</strong>保证可交互。你也可粘贴自己的任意 OpenAI 兼容接口 Key 或 API 中转地址覆盖默认。</p>
+        <div class="modal-tip" id="connStatus">连接状态：检测中…</div>
 
         <label class="field">
           <span>模式</span>
@@ -172,6 +173,7 @@
             <input id="setModel" type="text" placeholder="deepseek-chat" />
           </label>
           <p class="field-tip">默认 Key 已内置；此处填写的 Key / 设置仅保存在你本机浏览器（localStorage），不会上传到任何服务器。</p>
+        <button class="btn btn-ghost" id="btnTestConn" type="button">🧪 测试当前连接</button>
         </div>
       </div>
       <div class="modal-foot">
