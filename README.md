@@ -23,7 +23,7 @@
 | 🔁 多轮迭代 | 支持“改成深色模式”“把主题色换成红色”等增量编辑 |
 | 💾 本地持久化 | 项目 / 对话 / 版本（V1、V2…）存入 localStorage，刷新不丢失 |
 | 🔗 分享快照 | 把应用打包进 URL，任何人打开即可直接运行（无需服务器） |
-| 🔌 可选真实 LLM | 设置中粘贴任意 OpenAI 兼容 Key（DeepSeek / OpenAI 等）即用真实模型流式生成 |
+| 🌐 默认在线 DeepSeek | 内置 Key 开箱即用，真实模型 SSE 流式生成；调用失败时自动回退离线引擎 |
 
 ## 内置模板（离线即可生成）
 
@@ -51,26 +51,23 @@ python3 -m http.server 8000
 
 ## 智能体（默认在线 DeepSeek）
 
-应用**默认接入在线 DeepSeek 大模型**（`deepseek-chat`，SSE 流式生成）。
+应用**默认接入在线 DeepSeek 大模型**（`deepseek-chat`，SSE 流式生成），开箱即用。
 
-- **API Key 的安全性**：公开部署时 Key **不进代码仓库**——通过 GitHub 仓库 Secret `DEEPSEEK_KEY` 注入，由 `.github/workflows/deploy.yml` 在构建期写入 `assets/js/secrets.js`（该文件已被 `.gitignore` 忽略）。本地调试则复制 `secrets.example.js` 为 `secrets.js` 填入 Key。
-- **离线兜底**：当在线调用失败（如余额不足、网络异常、Key 无效）时，智能体会**自动回退**到内置离线模板引擎生成，保证演示始终可交互。你也可以在 **⚙ 智能体** 中手动切回离线模式。
-- 点击右上角 **⚙ 智能体** 可查看 / 修改 Base URL、模型名，或粘贴自己的 Key。
+- **为什么 Key 在前端？** 本站点是纯静态应用（零后端、零构建，直接由 GitHub Pages 提供），而 DeepSeek 官方接口支持浏览器跨域直连（CORS），因此要让“默认在线大模型”在公网开箱即用，Key 必须随站点提供（`assets/js/secrets.js` 内置演示 Key）。
+- **⚠️ 安全说明（演示用途）**：把 API Key 放进公开前端仅适合演示。本账户当前余额不足（调用返回 `402`），Key 暴露不会造成资损。正式环境请勿将真实 Key 提交到前端，请改用：① 自建后端代理转发（Key 不落地前端）；或 ② GitHub 仓库 Secret + Actions 注入（Key 不进代码与 git 历史）。如需重置密钥：https://platform.deepseek.com
+- **离线兜底**：当在线调用失败（如余额不足、网络异常、Key 失效）时，智能体会**自动回退**到内置离线模板引擎生成，保证演示始终可交互。你也可以在 **⚙ 智能体** 中手动切回离线模式。
+- 点击右上角 **⚙ 智能体** 可查看 / 修改 Base URL、模型名，或粘贴自己的 Key 覆盖默认。
 
-## 部署到 GitHub Pages（Actions 自动部署 + 安全注入 Key）
+## 部署到 GitHub Pages（分支部署，零构建）
 
-推送到 `main` 即自动构建并部署，DeepSeek Key 经仓库 Secret 注入，不进源码：
+仓库根目录即为站点根，推送到 `main` 分支后，在仓库 **Settings → Pages → Source** 选择 `Deploy from a branch` → `main` / `root` 即完成部署（本仓库已配置好）：
 
 ```bash
-# 1) 在 GitHub 仓库 Settings → Secrets and variables → Actions 添加：
-#    DEEPSEEK_KEY = 你的 DeepSeek API Key
-#    （或用 CLI：gh secret set DEEPSEEK_KEY）
-# 2) 推送 main 分支，Actions 会自动部署到 GitHub Pages
 git push origin main
-# Pages 设置：Source = GitHub Actions（首次 Actions 成功运行后会自动启用）
+# Pages 设置：Source = Deploy from a branch → main / root → Save
 ```
 
-如需纯静态（无 Actions）部署，把 Key 填入 `assets/js/secrets.js` 后从 `main` 分支 root 部署即可（注意该文件会被提交，密钥将公开）。
+本地调试：直接双击 `index.html`，或 `python3 -m http.server 8000`。
 
 ## 技术栈
 

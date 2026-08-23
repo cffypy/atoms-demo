@@ -146,17 +146,17 @@
         <button class="icon-btn" id="btnCloseSettings">✕</button>
       </div>
       <div class="modal-body">
-        <p class="modal-desc">默认使用<strong>内置离线智能体</strong>，无需任何 Key 即可真实生成可交互应用（保证评审时开箱即用）。如需更强效果，可粘贴任意 OpenAI 兼容接口的 API Key，智能体将改为调用真实大模型流式生成。</p>
+        <p class="modal-desc">默认已接入<strong>在线 DeepSeek（deepseek-chat）</strong>，内置演示 Key 随站点提供，开箱即用、真实大模型流式生成。若调用失败（如余额不足 / Key 失效），智能体会<strong>自动回退到内置离线引擎</strong>保证可交互。你也可粘贴自己的任意 OpenAI 兼容接口 Key 覆盖默认。</p>
 
         <label class="field">
           <span>模式</span>
           <select id="setMode">
-            <option value="offline">离线智能体（推荐，免 Key）</option>
-            <option value="llm">真实大模型（需 Key）</option>
+            <option value="llm">在线大模型 DeepSeek（默认，已内置 Key）</option>
+            <option value="offline">离线智能体（免 Key 兜底）</option>
           </select>
         </label>
 
-        <div id="llmFields" class="hidden">
+        <div id="llmFields">
           <label class="field">
             <span>API Base URL</span>
             <input id="setBaseUrl" type="text" placeholder="https://api.deepseek.com/v1" />
@@ -169,7 +169,7 @@
             <span>模型名</span>
             <input id="setModel" type="text" placeholder="deepseek-chat" />
           </label>
-          <p class="field-tip">Key 仅保存在你本机浏览器（localStorage），不会上传到任何服务器。</p>
+          <p class="field-tip">默认 Key 已内置；此处填写的 Key / 设置仅保存在你本机浏览器（localStorage），不会上传到任何服务器。</p>
         </div>
       </div>
       <div class="modal-foot">
@@ -183,7 +183,7 @@
   <div id="toast" class="toast hidden"></div>
 
   <!-- ============ 脚本（经典加载顺序，兼容 file:// 与 GitHub Pages） ============ -->
-  <!-- secrets.js 由本地提供或 GitHub Actions 注入（含 DeepSeek Key）；缺失时自动回退离线智能体 -->
+  <!-- secrets.js 内置演示用 DeepSeek Key（公开部署随仓库提供）；缺失时自动回退离线智能体 -->
   <script src="assets/js/secrets.js"></script>
   <script src="assets/js/templates.js"></script>
   <script src="assets/js/store.js"></script>

@@ -331,7 +331,7 @@
     el.settingsModal.onclick = (e) => { if (e.target === el.settingsModal) el.settingsModal.classList.add("hidden"); };
     $("setMode").onchange = () => { $("llmFields").classList.toggle("hidden", $("setMode").value !== "llm"); };
     $("btnSaveSettings").onclick = saveSettings;
-    $("btnResetSettings").onclick = () => { $("setMode").value = "offline"; $("llmFields").classList.add("hidden"); toast("已恢复默认"); };
+    $("btnResetSettings").onclick = () => { $("setMode").value = "llm"; $("llmFields").classList.remove("hidden"); toast("已恢复默认"); };
 
     // 拖拽分隔
     setupResizer();
@@ -348,7 +348,7 @@
 
   function openSettings() {
     const s = S.getSettings();
-    $("setMode").value = s.mode || "offline";
+    $("setMode").value = s.mode || "llm";
     $("setBaseUrl").value = s.baseUrl || "https://api.deepseek.com/v1";
     $("setApiKey").value = s.apiKey || "";
     $("setModel").value = s.model || "deepseek-chat";
