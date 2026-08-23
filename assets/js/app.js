@@ -55,49 +55,92 @@
     buildExampleChips();
   }
 
-  // ---------- 登录 / 注册门面 ----------
+  // ---------- 登录 / 注册 / 找回密码 门面 ----------
   let authMode = "login";
   function showAuthGate() {
     $("authModal").classList.remove("hidden");
     $("authError").classList.add("hidden");
+    applyAuthMode();
     setTimeout(() => { const i = $("authUser"); if (i) i.focus(); }, 60);
   }
   function showAuthError(msg) {
     const e = $("authError"); e.textContent = msg; e.classList.remove("hidden");
   }
+  // 根据当前模式（login/register/reset）切换可见字段与按钮文案
+  function applyAuthMode() {
+    const isReset = authMode === "reset";
+    const isReg = authMode === "register";
+    document.querySelectorAll(".auth-tab").forEach((x) => x.classList.toggle("active", x.dataset.auth === authMode));
+    $("authTabs").classList.toggle("hidden", isReset);
+    $("authEmailField").classList.toggle("hidden", !(isReg || isReset));
+    $("authEmailLabel").textContent = isReset ? "注册邮箱" : "邮箱（可选，用于找回密码）";
+    $("authPassLabel").textContent = isReset ? "新密码" : "密码";
+    $("authRememberField").classList.toggle("hidden", authMode !== "login");
+    $("authLinks").classList.toggle("hidden", authMode !== "login");
+    $("authBack").classList.toggle("hidden", !isReset);
+    $("authSubmit").textContent = isReset ? "重置密码" : isReg ? "注册并进入" : "登录";
+    $("authError").classList.add("hidden");
+    $("authPass").value = "";
+    $("authEmail").value = "";
+    $("authRemember").checked = true;
+  }
   function bindAuthEvents() {
     const submit = async () => {
       const user = $("authUser").value.trim();
       const pass = $("authPass").value;
-      if (!user || !pass) { showAuthError("请输入用户名和密码"); return; }
-      const res = authMode === "register"
-        ? await App.Auth.register(user, pass)
-        : await App.Auth.login(user, pass);
+      const email = $("authEmail").value.trim();
+      if (!user) { showAuthError("请输入用户名"); return; }
+
+      let res;
+      if (authMode === "register") {
+        if (!pass) { showAuthError("请设置密码"); return; }
+        res = await App.Auth.register(user, pass, email);
+      } else if (authMode === "reset") {
+        if (!email) { showAuthError("请输入注册邮箱"); return; }
+        if (!pass) { showAuthError("请输入新密码"); return; }
+        res = await App.Auth.resetPassword(user, email, pass);
+      } else {
+        if (!pass) { showAuthError("请输入密码"); return; }
+        res = await App.Auth.login(user, pass, $("authRemember").checked);
+      }
+
       if (res.ok) {
-        $("authUser").value = ""; $("authPass").value = "";
-        enterApp();
-        toast(authMode === "register" ? "注册成功，已登录" : "登录成功");
+        $("authUser").value = ""; $("authPass").value = ""; $("authEmail").value = "";
+        if (authMode === "reset") {
+          toast("密码已重置，请使用新密码登录");
+          authMode = "login"; applyAuthMode();
+        } else {
+          enterApp();
+          toast(authMode === "register" ? "注册成功，已登录" : "登录成功");
+        }
       } else {
         showAuthError(res.error);
       }
     };
     $("authSubmit").onclick = submit;
     $("authPass").addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
-    $("authUser").addEventListener("keydown", (e) => { if (e.key === "Enter") $("authPass").focus(); });
+    $("authUser").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        if ($("authEmail").offsetParent !== null) $("authEmail").focus();
+        else $("authPass").focus();
+      }
+    });
     document.querySelectorAll(".auth-tab").forEach((t) => {
       t.onclick = () => {
         authMode = t.dataset.auth;
-        document.querySelectorAll(".auth-tab").forEach((x) => x.classList.toggle("active", x === t));
-        $("authSubmit").textContent = authMode === "register" ? "注册并进入" : "登录";
-        $("authError").classList.add("hidden");
-        $("authPass").value = "";
+        applyAuthMode();
+        const i = authMode === "register" ? $("authEmail") : $("authPass");
+        i.focus();
       };
     });
+    $("authForgot").onclick = (e) => { e.preventDefault(); authMode = "reset"; applyAuthMode(); $("authUser").focus(); };
+    $("authBack").onclick = (e) => { e.preventDefault(); authMode = "login"; applyAuthMode(); $("authUser").focus(); };
     $("btnLogout").onclick = () => {
       App.Auth.logout();
       currentId = null;
       $("userBadge").classList.add("hidden");
       $("btnLogout").classList.add("hidden");
+      authMode = "login";
       showAuthGate();
       toast("已退出登录");
     };

@@ -189,7 +189,7 @@
     <div class="auth-card">
       <div class="auth-brand"><span class="brand-logo">⚛</span><strong>Atoms Demo</strong></div>
       <p class="auth-sub">登录后即可使用 AI 智能体生成可交互网页</p>
-      <div class="auth-tabs">
+      <div class="auth-tabs" id="authTabs">
         <button class="auth-tab active" data-auth="login">登录</button>
         <button class="auth-tab" data-auth="register">注册</button>
       </div>
@@ -198,14 +198,25 @@
           <span>用户名</span>
           <input id="authUser" type="text" placeholder="至少 3 个字符" autocomplete="username" />
         </label>
+        <label class="field" id="authEmailField">
+          <span id="authEmailLabel">邮箱（可选，用于找回密码）</span>
+          <input id="authEmail" type="email" placeholder="you@example.com" autocomplete="email" />
+        </label>
         <label class="field">
-          <span>密码</span>
+          <span id="authPassLabel">密码</span>
           <input id="authPass" type="password" placeholder="至少 6 个字符" autocomplete="current-password" />
         </label>
+        <div class="auth-check" id="authRememberField">
+          <label><input id="authRemember" type="checkbox" checked /> 记住我（下次自动登录）</label>
+        </div>
         <button id="authSubmit" class="btn btn-primary auth-submit">登录</button>
         <p id="authError" class="auth-error hidden"></p>
+        <div class="auth-links" id="authLinks">
+          <a href="#" id="authForgot" class="auth-link">忘记密码？</a>
+        </div>
+        <a href="#" id="authBack" class="auth-link hidden">← 返回登录</a>
       </div>
-      <p class="auth-note">🔒 本地账号：账号与加密后的密码仅存于当前浏览器，不上传任何服务器。数据按账号隔离。</p>
+      <p class="auth-note">🔒 本地账号：账号与加密后的密码仅存于当前浏览器，不上传任何服务器；邮箱仅用于本机找回密码。数据按账号隔离。</p>
     </div>
   </div>
 
