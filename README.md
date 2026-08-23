@@ -2,6 +2,8 @@
 
 > 对标 [atoms.dev](https://atoms.dev/) 的 **AI 智能体原型**：用自然语言驱动智能体生成**真实可交互**的单文件网页应用，并实时可视化预览。
 > 纯静态、零后端、零构建 —— 一份 `index.html` 即可跑，天然适配 GitHub Pages。
+>
+> 🔗 **在线演示（公网可访问）**：https://cffypy.github.io/atoms-demo/
 
 ## 这是什么
 
