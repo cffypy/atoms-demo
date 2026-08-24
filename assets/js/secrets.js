@@ -9,10 +9,9 @@
  *   大模型”在公网开箱即用，Key 必须存在于客户端才能发起请求。
  *
  * ⚠️ 安全说明（演示用途）：
- *   把 API Key 放进公开前端仅适合演示。本账户当前余额不足（调用会返回
- *   402），Key 暴露不会造成资损。正式环境请改为：
+ *   把 API Key 放进公开前端仅适合演示。正式环境请改为：
  *     ① 自建后端代理转发（Key 不落地前端）；或
  *     ② GitHub 仓库 Secret + Actions 注入（Key 不进代码与 git 历史）。
  *   如需重置密钥：https://platform.deepseek.com
  */
-window.ATOMS_SECRETS = { apiKey: "sk-e5ab068337264ba38cafc9f8cec453cb" };
+window.ATOMS_SECRETS = { apiKey: "sk-40d9568f7ad14ed097e9ee4ec828f1b5" };
